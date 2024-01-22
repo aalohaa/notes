@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="shortcut icon" href="/public/images/favicon.png" type="image/x-icon">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logotype">
+                <span class="material-symbols-outlined"
+                    style="font-size: 70px; color: white; text-shadow: 0 0 5px #fff;">
+                    event_note
+                </span>
+            </div>
+
+            <div class="title">
+                <a href="/">Notes</a>
+            </div>
+        </div>
+
+        <div class="navbar">
+            <div class="sign-up">
+                <a href="/signup">Sign Up</a>
+            </div>
+            <div class="sign-in">
+                <a href="/signin">Sign In</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+
+        <div class="sign-in-form">
+            <div class="sign-in-text">
+                <p>Sign In</p>
+            </div>
+            <div class="email">
+                <input type="email" name="email" id="email" placeholder="Email" required>
+            </div>
+            <div class="password">
+                <input type="password" name="password" id="password" placeholder="Password" required>
+            </div>
+            <div class="sign-in-btn">
+                <button onclick="signIn()" id="signInBtn">Sign In</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+function signIn() {
+            let email = $('#email').val().trim();
+            let password = $('#password').val().trim();
+
+            $('#signInBtn').prop('disabled', true);
+
+            $.ajax({
+                url: '/auth/signin',
+                method: 'post',
+                data: {
+                    email: email,
+                    password: password
+                },
+                success: function(r) {
+                    if(r.r == 1) {
+                        sessionStorage.setItem('username', r.username)
+                        sessionStorage.setItem('city', r.city)
+                        window.location.href = '/'
+                    } else if(r.r == 2) {
+                        alert('Invalid email, try again!');
+                    } else if (r.r == 3) {
+                        alert('Missing password, fill in password, please!')
+                    } else if(r.r == 4) {
+                        alert('Invalid credentials, try again!')
+                    } else if(r.r == 5) {
+                        alert('Too many requests, try again later')
+                    }
+                    else {
+                        alert('Error')
+                    }
+                },
+                complete: function() {
+                $('#signInBtn').prop('disabled', false);
+            }
+            })
+        }
+
+    </script>
+</body>
+
+</html>
