@@ -66,6 +66,7 @@
             </div>
 
             <div class="image-file">
+                <label for="">Image {optional}</label>
                 <input type="file" name="note_img" id="note_img" accept="image/*">
             </div>
 
@@ -103,6 +104,10 @@
                         <div class="mb-3 mt-3">
                             <label class="mb-2">Deadline Time</label>
                             <input type="datetime-local" name="deadline" id="new_deadline">
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label class="mb-2">Image(optional)</label>
+                            <input type="file" name="new_note_img" id="new_note_img" accept="image/*">
                         </div>
                     </form>
                 </div>
@@ -164,7 +169,7 @@
                             <h1>${note.title}</h1>
                             <p>${note.description}</p>
                             <h4>${note.deadline}</h4>
-                            <img src="${note.note_img}" width="300">
+                            <img src="${note.note_img}" width="500">
                             <div class='note-buttons'>
                                 <button class="update-btn" onclick="showUpdateNoteModal('${note.note_id}')">Update</button>
                                 <button class="delete-btn"onclick="deleteNote('${note.note_id}')">Delete Task</button>
@@ -177,9 +182,37 @@
             })
         }
 
+        function updateNote() {
+            let new_title = $('#new_title').val();
+            let new_description = $('#new_description').val();
+            let new_deadline = $('#new_deadline').val();
+            let new_note_img = $('#new_note_img')[0].files[0];
+
+            const formData = new FormData();
+            formData.append('new_title', new_title);
+            formData.append('new_description', new_description);
+            formData.append('new_deadline', new_deadline);
+            formData.append('note_img', new_note_img);
+            formData.append('note_id', note_id);
+
+            $.ajax({    
+                url: '/notes/update',
+                method: 'post',
+                contentType: false,
+                processData: false,
+                data: formData,
+                success: function (r) {
+                    if (r.r) {
+                        alert('successfully updated!');
+                        window.location.reload();
+                    } else {
+                        alert('error');
+                    }
+                }
+            });
+        }
+
         function deleteNote(note_id) {
-
-
             $.ajax(
                 {
                     "url": "/notes/delete",
@@ -202,31 +235,6 @@
         function showUpdateNoteModal(selected_note_id) {
             note_id = selected_note_id
             $('#edit_note-modal').modal('show')
-        }
-
-        function updateNote() {
-            let new_title = $('#new_title').val();
-            let new_description = $('#new_description').val();
-            let new_deadline = $('#new_deadline').val();
-
-            $.ajax({
-                url: '/notes/update',
-                method: 'post',
-                data: {
-                    new_title: new_title,
-                    new_description: new_description,
-                    new_deadline: new_deadline,
-                    note_id: note_id
-                },
-                success: function (r) {
-                    if (r.r) {
-                        alert('successfully updated!');
-                        window.location.reload();
-                    } else {
-                        alert('error');
-                    }
-                }
-            });
         }
 
         function getWeather() {

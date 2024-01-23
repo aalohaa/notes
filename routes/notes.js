@@ -13,51 +13,6 @@ const metadata = {
     cacheControl: 'public, max-age=31536000',
 };
 
-
-router.post('/update', async (req, res) => {
-    var r = { r: 0 }
-    let note_id = req.body.note_id;
-    let user_id = req.session.user_id;
-    let new_title = req.body.new_title;
-    let new_description = req.body.new_description;
-    let new_deadline = req.body.new_deadline;
-
-    if (!new_title || !new_description || !new_deadline) {
-        return res.send(r)
-    }
-
-    await fdb.collection('users').doc(user_id).collection('notes').doc(note_id).update({
-        title: new_title,
-        description: new_description,
-        deadline: new_deadline
-    }).then(() => {
-        r['r'] = 1
-        res.send(r)
-    }).catch((e) => {
-        console.log(e)
-        res.send(r)
-    })
-
-})
-
-router.post('/delete', async (req, res) => {
-    var r = { r: 0 }
-    let note_id = req.body.note_id;
-    let user_id = req.session.user_id;
-
-    if (!note_id || !user_id) {
-        return res.send(r);
-    }
-
-    await fdb.collection('users').doc(user_id).collection('notes').doc(note_id).delete().then(() => {
-        r['r'] = 1
-        res.send(r)
-    }).catch((e) => {
-        console.log(e)
-        res.send(r)
-    })
-})
-
 router.post('/add', async (req, res) => {
     var r = { r: 0 }
     let title = req.body.title;
@@ -81,15 +36,17 @@ router.post('/add', async (req, res) => {
             metadata: metadata,
             destination: `notes/${note_img.originalname}`
         });
+
         var note_image_url = `https://firebasestorage.googleapis.com/v0/b/notes-6b8ea.appspot.com/o/notes%2F${note_img.originalname}?alt=media`
         await fdb.collection('users').doc(req.session.user_id).collection('notes').doc(nd.id).update({ note_img: note_image_url }).then(() => {
             r['r'] = 1;
+
             res.send(r);
 
-            fs.unlink(note_img.path, ()=>{
-                
+            fs.unlink(note_img.path, () => {
+
             })
-            
+
         })
 
     }).catch((e) => {
@@ -116,6 +73,66 @@ router.get('/get', async (req, res) => {
     })
 
     res.send(data)
+})
+
+
+router.post('/update', async (req, res) => {
+    var r = { r: 0 }
+    let note_id = req.body.note_id;
+    let user_id = req.session.user_id;
+    let new_title = req.body.new_title;
+    let new_description = req.body.new_description;
+    let new_deadline = req.body.new_deadline;
+    let note_img = req.file;
+    console.log(note_img);
+    console.log(req.body);
+
+    if (!new_title || !new_description || !new_deadline) {
+        return res.send(r)
+    }
+    await fdb.collection('users').doc(user_id).collection('notes').doc(note_id).update({
+        title: new_title,
+        description: new_description,
+        deadline: new_deadline
+    }).then(async (nd) => {
+
+        await storage.upload(note_img.path, {
+            gzip: true,
+            metadata: metadata,
+            destination: `notes/${note_img.originalname}`
+        });
+        var note_image_url = `https://firebasestorage.googleapis.com/v0/b/notes-6b8ea.appspot.com/o/notes%2F${note_img.originalname}?alt=media`
+        await fdb.collection('users').doc(user_id).collection('notes').doc(note_id).update({ note_img: note_image_url }).then(() => {
+            r['r'] = 1;
+            res.send(r);
+            fs.unlink(note_img.path, () => {
+
+            })
+
+        })
+    }).catch((e) => {
+        console.log(e)
+        res.send(r)
+    })
+
+})
+
+router.post('/delete', async (req, res) => {
+    var r = { r: 0 }
+    let note_id = req.body.note_id;
+    let user_id = req.session.user_id;
+
+    if (!note_id || !user_id) {
+        return res.send(r);
+    }
+
+    await fdb.collection('users').doc(user_id).collection('notes').doc(note_id).delete().then(() => {
+        r['r'] = 1
+        res.send(r)
+    }).catch((e) => {
+        console.log(e)
+        res.send(r)
+    })
 })
 
 
